@@ -1,20 +1,14 @@
-// ./express-server/controllers/Chat.server.controller.js
-import mongoose from 'mongoose';
 
-
-//import models
 import Chat from '../models/chat';
 import { Request, Response} from "express";
 
 export const getChats = (io:any) => {
   Chat.find().then(result => {
-    if(result){
-      const data=result;
-    return io.emit({'success':true,'message':'Chats fetched successfully', prods: [...data]});
+    if(result){   
+    return io.emit({'success':true,'message':'Chats fetched successfully', result});
     //io.emit({'success':false,'message':'Some Error'});
-    }
-       const data=result;
-    return io.emit({'success':true,'message':'Chats fetched successfully', prods: [...data]});
+    }    
+    return io.emit({'success':true,'message':'Chats fetched successfully', result});
   });
 }
 
@@ -43,7 +37,7 @@ export const updateChat = (io:any,id:any) => {
     else{
       const results = Chat.save();
      result = {'success':true,'message':'Chat Updated Successfully',Chat};
-     io.emit('ChatUpdated', result);
+     io.emit('ChatUpdated', results);
     }
   })
 }
@@ -56,7 +50,6 @@ export const getChat = (req:Request,res: Response,io:any) => {
     if(Chat.length){
       io.emit('ChatDeleted', Chat);
       return res.json({'success':true,'message':'Chat fetched by id successfully',Chat});
-     
     }
     else{
       return res.json({'success':false,'message':'Chat with the given id not found'});
@@ -65,15 +58,12 @@ export const getChat = (req:Request,res: Response,io:any) => {
 }
 
 export const deleteChat = (io:any,T:any) => {
-  let result;
-  Chat.findByIdAndRemove(T._id, (err,data):any => {
-    if(err){
-    result = {'success':false,'message':'Some Error','error':err};
-    console.log(result);
-    }
-    else {
-      result = {'success':true,'message':'Chat deleted successfully', data};
-      io.emit('ChatDeleted', result);
-    }
-  })
+try{
+  Chat.findByIdAndRemove(T._id)
+ const result = {'success':true,'message':'Chat deleted successfully'};
+  io.emit('ChatDeleted', result);  
+}
+catch(err){
+ console.log(err); 
+  }
 }
